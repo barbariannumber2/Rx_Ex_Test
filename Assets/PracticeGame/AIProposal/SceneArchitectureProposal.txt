@@ -1,0 +1,315 @@
+# シーンアーキテクチャ改善提案
+
+## 1. 基本構造の定義
+
+```csharp
+// シーンの状態を表す列挙型
+public enum SceneState
+{
+    None,
+    Initializing,
+    Ready,
+    Running,
+    Paused,
+    Cleaning
+}
+
+// シーンのデータインターフェース
+public interface ISceneData
+{
+    string SceneId { get; }
+    Dictionary<string, object> Parameters { get; }
+}
+
+// シーンの基本的なView機能を定義
+public interface ISceneView
+{
+    // シーンの準備完了を通知
+    IObservable<Unit> OnSceneReady { get; }
+    
+    // シーンの表示/非表示制御
+    IObservable<bool> OnVisibilityChanged { get; }
+    
+    // 初期化処理
+    void Initialize(ISceneData data);
+    
+    // クリーンアップ処理
+    void Cleanup();
+    
+    // シーンのUI要素の表示/非表示
+    void SetVisible(bool isVisible);
+}
+```
+
+## 2. シーン基底クラスの実装
+
+```csharp
+public abstract class BaseScenePresenter : IDisposable
+{
+    protected readonly CompositeDisposable _disposables = new CompositeDisposable();
+    protected readonly ReactiveProperty<SceneState> _sceneState = 
+        new ReactiveProperty<SceneState>(SceneState.None);
+    
+    protected readonly ISceneView _view;
+    protected readonly ISceneManager _sceneManager;
+    protected readonly IMessageBroker _messageBroker;
+
+    public IReadOnlyReactiveProperty<SceneState> SceneState => _sceneState;
+
+    protected BaseScenePresenter(
+        ISceneView view, 
+        ISceneManager sceneManager,
+        IMessageBroker messageBroker)
+    {
+        _view = view;
+        _sceneManager = sceneManager;
+        _messageBroker = messageBroker;
+
+        // シーンの状態変化を監視
+        _sceneState
+            .Skip(1) // 初期値をスキップ
+            .Subscribe(OnSceneStateChanged)
+            .AddTo(_disposables);
+
+        // シーンの表示/非表示を監視
+        _view.OnVisibilityChanged
+            .Subscribe(OnVisibilityChanged)
+            .AddTo(_disposables);
+    }
+
+    public virtual async UniTask Initialize(ISceneData sceneData, CancellationToken token)
+    {
+        _sceneState.Value = SceneState.Initializing;
+
+        try
+        {
+            // View層の初期化
+            _view.Initialize(sceneData);
+
+            // シーン固有の初期化処理
+            await OnInitializeInternal(sceneData, token);
+
+            _sceneState.Value = SceneState.Ready;
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"Scene initialization failed: {ex.Message}");
+            throw;
+        }
+    }
+
+    protected abstract UniTask OnInitializeInternal(ISceneData sceneData, CancellationToken token);
+
+    protected virtual void OnSceneStateChanged(SceneState state)
+    {
+        Debug.Log($"Scene state changed to: {state}");
+    }
+
+    protected virtual void OnVisibilityChanged(bool isVisible)
+    {
+        _sceneState.Value = isVisible ? SceneState.Running : SceneState.Paused;
+    }
+
+    public virtual void Dispose()
+    {
+        _sceneState.Value = SceneState.Cleaning;
+        _disposables.Dispose();
+        _view.Cleanup();
+    }
+}
+```
+
+## 3. タイトルシーンの実装例
+
+```csharp
+// タイトルシーン用のViewインターフェース
+public interface ITitleSceneView : ISceneView
+{
+    IObservable<Unit> OnStartButtonPressed { get; }
+    IObservable<Unit> OnSettingsButtonPressed { get; }
+    
+    void UpdateTitleText(string text);
+    void SetButtonsInteractable(bool isInteractable);
+}
+
+// タイトルシーンのPresenter
+public class TitleScenePresenter : BaseScenePresenter
+{
+    private readonly ITitleSceneView _titleView;
+    private readonly IGameSettingsService _settingsService;
+    private readonly IUserProgressService _progressService;
+
+    public TitleScenePresenter(
+        ITitleSceneView view,
+        ISceneManager sceneManager,
+        IMessageBroker messageBroker,
+        IGameSettingsService settingsService,
+        IUserProgressService progressService) 
+        : base(view, sceneManager, messageBroker)
+    {
+        _titleView = view;
+        _settingsService = settingsService;
+        _progressService = progressService;
+    }
+
+    protected override async UniTask OnInitializeInternal(ISceneData sceneData, CancellationToken token)
+    {
+        // ボタンイベントの購読
+        _titleView.OnStartButtonPressed
+            .ThrottleFirst(TimeSpan.FromSeconds(1)) // 連打防止
+            .Subscribe(_ => OnStartButtonPressed())
+            .AddTo(_disposables);
+
+        _titleView.OnSettingsButtonPressed
+            .ThrottleFirst(TimeSpan.FromSeconds(1))
+            .Subscribe(_ => OnSettingsButtonPressed())
+            .AddTo(_disposables);
+
+        // ユーザー進捗の読み込み
+        var progress = await _progressService.LoadProgress(token);
+        
+        // タイトルテキストの更新
+        _titleView.UpdateTitleText($"Welcome back, {progress.UserName}!");
+    }
+
+    private void OnStartButtonPressed()
+    {
+        _titleView.SetButtonsInteractable(false);
+        
+        // シーン遷移データの作成
+        var transitionData = new SceneTransitionData(
+            SceneType.Select,
+            new Dictionary<string, object>
+            {
+                ["transitionType"] = "fade",
+                ["duration"] = 1.0f
+            });
+
+        _sceneManager.ChangeScene(transitionData);
+    }
+
+    private async void OnSettingsButtonPressed()
+    {
+        _titleView.SetButtonsInteractable(false);
+        
+        try
+        {
+            await _settingsService.ShowSettings();
+        }
+        finally
+        {
+            _titleView.SetButtonsInteractable(true);
+        }
+    }
+}
+
+// タイトルシーンのView実装
+public class TitleSceneView : MonoBehaviour, ITitleSceneView
+{
+    [SerializeField] private Button startButton;
+    [SerializeField] private Button settingsButton;
+    [SerializeField] private TextMeshProUGUI titleText;
+
+    private readonly Subject<Unit> _onSceneReady = new Subject<Unit>();
+    private readonly Subject<bool> _onVisibilityChanged = new Subject<bool>();
+    private readonly Subject<Unit> _onStartButtonPressed = new Subject<Unit>();
+    private readonly Subject<Unit> _onSettingsButtonPressed = new Subject<Unit>();
+
+    public IObservable<Unit> OnSceneReady => _onSceneReady;
+    public IObservable<bool> OnVisibilityChanged => _onVisibilityChanged;
+    public IObservable<Unit> OnStartButtonPressed => _onStartButtonPressed;
+    public IObservable<Unit> OnSettingsButtonPressed => _onSettingsButtonPressed;
+
+    private void Awake()
+    {
+        startButton.OnClickAsObservable()
+            .Subscribe(_ => _onStartButtonPressed.OnNext(Unit.Default))
+            .AddTo(this);
+
+        settingsButton.OnClickAsObservable()
+            .Subscribe(_ => _onSettingsButtonPressed.OnNext(Unit.Default))
+            .AddTo(this);
+    }
+
+    public void Initialize(ISceneData data)
+    {
+        gameObject.SetActive(true);
+        _onSceneReady.OnNext(Unit.Default);
+    }
+
+    public void Cleanup()
+    {
+        gameObject.SetActive(false);
+    }
+
+    public void SetVisible(bool isVisible)
+    {
+        gameObject.SetActive(isVisible);
+        _onVisibilityChanged.OnNext(isVisible);
+    }
+
+    public void UpdateTitleText(string text)
+    {
+        titleText.text = text;
+    }
+
+    public void SetButtonsInteractable(bool isInteractable)
+    {
+        startButton.interactable = isInteractable;
+        settingsButton.interactable = isInteractable;
+    }
+}
+```
+
+## 4. DIコンテナ（Zenject）の設定
+
+```csharp
+public class TitleSceneInstaller : MonoInstaller
+{
+    public override void InstallBindings()
+    {
+        // シーンのView
+        Container.Bind<ITitleSceneView>()
+            .To<TitleSceneView>()
+            .FromComponentInHierarchy()
+            .AsSingle();
+
+        // シーンのPresenter
+        Container.Bind<TitleScenePresenter>()
+            .AsSingle()
+            .NonLazy();
+
+        // 各種サービス
+        Container.Bind<IGameSettingsService>()
+            .To<GameSettingsService>()
+            .AsSingle();
+
+        Container.Bind<IUserProgressService>()
+            .To<UserProgressService>()
+            .AsSingle();
+    }
+}
+```
+
+## 改善によるメリット
+
+1. **責務の明確な分離**:
+   - View層はUI表示とユーザー入力の受け取りに専念
+   - Presenter層はビジネスロジックとデータ管理を担当
+
+2. **テスタビリティの向上**:
+   - インターフェースベースの設計により、モックやスタブの作成が容易
+   - 依存性注入により、各コンポーネントの単体テストが可能
+
+3. **コード再利用性の向上**:
+   - 共通機能を基底クラスに集約
+   - シーン固有の機能のみを各シーンで実装
+
+4. **状態管理の改善**:
+   - シーンの状態遷移が明確
+   - ReactivePropertyによる状態変更の監視が容易
+
+5. **エラーハンドリングの強化**:
+   - 初期化処理での例外処理
+   - ボタンの連打対策
+   - 非同期処理の適切な管理 

@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1045 &1
+EditorBuildSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Scenes:
+  - enabled: 1
+    path: Assets/ZenjectTest/ZenjectTest.unity
+    guid: 9ca5a710d6fcf41429bc7b49c246a46d
+  - enabled: 1
+    path: Assets/PracticeGame/Title/Title.unity
+    guid: 01d8e4880afc87946a4fa4a62fdd75ae
+  - enabled: 1
+    path: Assets/PracticeGame/Select/Select.unity
+    guid: 3dba1c886e9b2b14781a5bd4583a6181
+  - enabled: 1
+    path: Assets/PracticeGame/Play/Play.unity
+    guid: 885bb674e52547a4a903b8a4a8c76dfd
+  - enabled: 1
+    path: Assets/PracticeGame/Result/Result.unity
+    guid: a981e36de1205534cae69922f0df19f0
+  m_configObjects:
+    com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+  m_UseUCBPForAssetBundles: 0
