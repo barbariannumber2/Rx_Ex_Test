@@ -9,7 +9,7 @@ namespace PracticeGame
         public override void InstallBindings()
         {
             Container.Bind<Camera>()
-                .FromComponentInNewPrefabResource("Main Camera")
+                .FromComponentInNewPrefabResource("MainCamera")
                 .AsSingle()
                 .NonLazy();
         }
