@@ -5,7 +5,7 @@ using Zenject;
 
 namespace PracticeGame
 {
-    public class SceneManager : MonoBehaviour
+    public class SceneManager : MonoBehaviour,ISceneManager
     {
         private List<IScene> _currentScenes = new();
 

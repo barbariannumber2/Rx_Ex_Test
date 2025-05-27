@@ -7,6 +7,8 @@ namespace PracticeGame
 {
     public abstract class SceneBase : MonoBehaviour,IScene
     {
+        protected ISceneManager _sceneManager;
+
         public abstract SceneType GetSceneType();
 
         public virtual List<SceneType> UseScenes { get { return new(); } }

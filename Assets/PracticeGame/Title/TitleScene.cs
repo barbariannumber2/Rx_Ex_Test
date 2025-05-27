@@ -7,15 +7,13 @@ namespace PracticeGame
 {
     public class TitleScene : SceneBase
     {
-        private SceneManager _sceneManager;
-
-        private CommonButtonView _buttonView;
+        private IPointerPressEventSender _titleButton;
 
         [Inject]
-        public void Construct(SceneManager sceneManager, [Inject(Id = "Start")] CommonButtonView buttonView)
+        public void Construct(ISceneManager sceneManager, [Inject(Id = "Start")] IPointerPressEventSender titleButton)
         {
             _sceneManager = sceneManager;
-            _buttonView = buttonView;
+            _titleButton = titleButton;
             Debug.Log("TitleScene: Injection Complete");
         }
 
@@ -26,7 +24,7 @@ namespace PracticeGame
 
         public override UniTask OnInitialize(ISceneData sceneData, CancellationToken token)
         {
-            UniRxUtility.SubscribeWithAddTo(_buttonView.OnPressed, 
+            UniRxUtility.SubscribeWithAddTo(_titleButton.OnPressed, 
                 (unit) => _sceneManager.ChangeScene(SceneType.Select,null), this);
             return UniTask.CompletedTask;
         }

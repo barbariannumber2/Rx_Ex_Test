@@ -6,10 +6,8 @@ namespace PracticeGame
 {
     public class SelectScene : SceneBase
     {
-        private SceneManager _sceneManager;
-
         [Inject]
-        public void Construct(SceneManager sceneManager)
+        public void Construct(ISceneManager sceneManager)
         {
             _sceneManager = sceneManager;
             Debug.Log("SelectScene: Injection Complete");
