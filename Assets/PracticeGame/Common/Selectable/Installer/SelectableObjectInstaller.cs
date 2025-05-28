@@ -14,7 +14,7 @@ namespace PracticeGame
                 .FromComponentSibling()
                 .AsTransient();
 
-            Container.Bind<IPointerHoverEventSender>()
+            Container.Bind<IMultiInputSelectEventSender>()
                 .To<CommonSelectableObject>()
                 .FromComponentSibling()
                 .AsTransient();

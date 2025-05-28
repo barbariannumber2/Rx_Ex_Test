@@ -1,6 +1,4 @@
-﻿using System;
-using UniRx;
-using UnityEngine;
+﻿using UnityEngine;
 using Zenject;
 
 namespace PracticeGame
@@ -8,7 +6,7 @@ namespace PracticeGame
     /// <summary>
     /// カーソルオンオフを使用するオブジェクトの見た目表示用
     /// </summary>
-    [RequireComponent(typeof(IPointerHoverEventSender))]
+    [RequireComponent(typeof(IMultiInputSelectEventSender))]
     public class CursorView : MonoBehaviour
     {
         [SerializeField]
@@ -17,20 +15,23 @@ namespace PracticeGame
         [SerializeField]
         private GameObject _offCursorObject;
 
-        private IPointerHoverEventSender _selectableObject = null;
+        private IMultiInputSelectEventSender _selectEventSender = null;
 
         [Inject]
-        public void Construct(IPointerHoverEventSender pointerHoverEventSender)
+        public void Construct(IMultiInputSelectEventSender selectEventSender)
         {
-            _selectableObject = pointerHoverEventSender;
+            _selectEventSender = selectEventSender;
         }
 
         private void Awake()
         {
-            _selectableObject ??= GetComponent<IPointerHoverEventSender>();
+            _selectEventSender ??= GetComponent<IMultiInputSelectEventSender>();
 
-            _selectableObject.OnEnterPointer.SubscribeWithAddTo((_) => ChangeCursor(true), this);
-            _selectableObject.OnExitPointer.SubscribeWithAddTo((_) => ChangeCursor(false), this);
+            _selectEventSender.OnEnterPointer.SubscribeWithAddTo((_) => ChangeCursor(true), this);
+            _selectEventSender.OnExitPointer.SubscribeWithAddTo((_) => ChangeCursor(false), this);
+
+            _selectEventSender.OnEnterCommand.SubscribeWithAddTo((_) => ChangeCursor(true), this);
+            _selectEventSender.OnExitCommand.SubscribeWithAddTo((_) => ChangeCursor(false), this);
 
             ChangeCursor(false);
         }
