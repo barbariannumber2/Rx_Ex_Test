@@ -6,10 +6,13 @@ namespace PracticeGame
 {
     public class SelectScene : SceneBase
     {
+        private IView _selectView;
+
         [Inject]
-        public void Construct(ISceneManager sceneManager)
+        public void Construct(ISceneManager sceneManager/*,IView selectView*/)
         {
             _sceneManager = sceneManager;
+            //_selectView = selectView;
             Debug.Log("SelectScene: Injection Complete");
         }
 
