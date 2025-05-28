@@ -2,11 +2,11 @@
 using UniRx;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
+
 
 namespace PracticeGame
 {
-    public class CommonButtonView : CommonSelectableObject, IPressable, IPressableChangeSender, IPressableOperator, IPointerPressEventSender
+    public class CommonButtonView : CommonSelectableObject, ICommonPressable
     {
         /// <summary>
         /// クリックや押したときみたいな決定系機能のオンオフ
@@ -14,27 +14,33 @@ namespace PracticeGame
         /// </summary>
         private readonly BoolReactiveProperty _isPressable = new(true);
 
+        private Subject<Unit> _onPressCommand = new();
+
         public bool IsPressable => _isPressable.Value;
 
         public IObservable<bool> OnPressableChange => _isPressable.AsObservable();
 
         public void SetPressable(bool isPressable) { _isPressable.Value = isPressable; }
 
-        public IObservable<PointerEventData> OnClicked => _eventTrigger.OnPointerClickAsObservable()
+        public IObservable<PointerEventData> OnPointerClick => _eventTrigger.OnPointerClickAsObservable()
             .Where((data) => _isPressable.Value);
 
-        public IObservable<PointerEventData> OnPressed => _eventTrigger.OnPointerDownAsObservable()
+        public IObservable<PointerEventData> OnPointerDown => _eventTrigger.OnPointerDownAsObservable()
             .Where((data) => _isPressable.Value);
 
-        public IObservable<PointerEventData> OnReleased => _eventTrigger.OnPointerUpAsObservable()
+        public IObservable<PointerEventData> OnPointerUp => _eventTrigger.OnPointerUpAsObservable()
             .Where((data) => _isPressable.Value);
 
-        protected override void Awake()
+        public IObservable<Unit> OnPressCommand => _onPressCommand.Where((data) => _isPressable.Value);
+
+        public override void Initialize()
         {
-            base.Awake();
-            OnClicked.Subscribe(_ => Debug.Log("OnClicked"));
-            OnPressed.Subscribe(_ => Debug.Log("OnPressed"));
-            OnReleased.Subscribe(_ => Debug.Log("OnReleased"));
+            base.Initialize();
+#if UNITY_EDITOR
+            OnPointerClick.Subscribe(_ => Debug.Log("OnClicked"));
+            OnPointerDown.Subscribe(_ => Debug.Log("OnPressed"));
+            OnPointerUp.Subscribe(_ => Debug.Log("OnReleased"));
+#endif
         }
 
         /// <summary>
@@ -52,11 +58,12 @@ namespace PracticeGame
         {
             base.OnDestroy();
             _isPressable.Dispose();
+            _onPressCommand.Dispose();
         }
 
         public void Press()
         {
-            
+            _onPressCommand.OnNext(Unit.Default);
         }
     }
 }

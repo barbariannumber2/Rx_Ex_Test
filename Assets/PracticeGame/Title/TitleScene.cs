@@ -24,7 +24,7 @@ namespace PracticeGame
 
         public override UniTask OnInitialize(ISceneData sceneData, CancellationToken token)
         {
-            UniRxUtility.SubscribeWithAddTo(_titleButton.OnPressed, 
+            UniRxUtility.SubscribeWithAddTo(_titleButton.OnPointerDown, 
                 (unit) => _sceneManager.ChangeScene(SceneType.Select,null), this);
             return UniTask.CompletedTask;
         }

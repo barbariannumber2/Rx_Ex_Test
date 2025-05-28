@@ -7,6 +7,6 @@ namespace PracticeGame
     {
         public bool IsSelectable { get; }
 
-        
+
     }
 }

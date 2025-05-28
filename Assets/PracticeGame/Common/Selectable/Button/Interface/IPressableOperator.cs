@@ -4,6 +4,6 @@ namespace PracticeGame
 {
     public interface IPressableOperator
     {
-        public void SetPressable(bool isDeterminable);
+        public void SetPressable(bool isPressable);
     }
 }

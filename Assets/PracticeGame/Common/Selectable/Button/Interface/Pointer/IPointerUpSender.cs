@@ -6,6 +6,6 @@ namespace PracticeGame
 {
     public interface IPointerUpSender
     {
-        public IObservable<PointerEventData> OnReleased {  get; }
+        public IObservable<PointerEventData> OnPointerUp {  get; }
     }
 }

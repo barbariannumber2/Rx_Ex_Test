@@ -6,6 +6,6 @@ namespace PracticeGame
 {
     public interface IPointerClickSender
     {
-        public IObservable<PointerEventData> OnClicked {  get; }
+        public IObservable<PointerEventData> OnPointerClick {  get; }
     }
 }
