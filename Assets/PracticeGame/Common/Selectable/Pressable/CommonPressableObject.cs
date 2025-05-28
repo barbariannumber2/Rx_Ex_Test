@@ -6,7 +6,7 @@ using UnityEngine.EventSystems;
 
 namespace PracticeGame
 {
-    public class CommonButtonView : CommonSelectableObject, ICommonPressable
+    public class CommonPressableObject : CommonSelectableObject, ICommonPressable
     {
         /// <summary>
         /// クリックや押したときみたいな決定系機能のオンオフ

@@ -12,7 +12,7 @@ namespace PracticeGame
             Container.Bind<ObservableEventTrigger>()
                 .WithId("Selectable")
                 .FromComponentSibling()
-                .AsCached();
+                .AsTransient();
 
             Container.Bind<IPointerHoverEventSender>()
                 .To<CommonSelectableObject>()

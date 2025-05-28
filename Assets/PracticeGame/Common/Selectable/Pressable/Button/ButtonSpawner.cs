@@ -9,7 +9,7 @@ namespace PracticeGame
         private DiContainer _container;
 
         [SerializeField]
-        private CommonButtonView _buttonPrefab;
+        private CommonPressableObject _buttonPrefab;
 
         public void SpawnButton()
         {
