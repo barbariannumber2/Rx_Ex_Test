@@ -8,7 +8,8 @@ namespace PracticeGame
     {
         public override void InstallBindings()
         {
-            Container.Bind<SceneManager>()
+            Container.Bind<ISceneManager>()
+                .To<SceneManager>()
                 .FromNewComponentOnNewGameObject()
                 .AsSingle()
                 .OnInstantiated((context, obj) => (obj as SceneManager)?.SceneSettingsInitialization(SceneType.Title, null))
