@@ -6,10 +6,10 @@ namespace PracticeGame
     public class TitleInstaller : MonoInstaller
     {
         [SerializeField]
-        private CommonButtonView _startButton;
+        private CommonPressableObject _startButton;
         public override void InstallBindings()
         {
-            Container.Bind<CommonButtonView>()
+            Container.Bind<CommonPressableObject>()
                 .WithId("Start")
                 .FromComponentOn(_startButton.gameObject)
                 .AsTransient();

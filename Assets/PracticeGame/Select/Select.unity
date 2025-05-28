@@ -388,7 +388,7 @@ GameObject:
   - component: {fileID: 1417661114}
   - component: {fileID: 1417661113}
   m_Layer: 5
-  m_Name: Button
+  m_Name: SButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -657,6 +657,7 @@ GameObject:
   - component: {fileID: 2005336973}
   - component: {fileID: 2005336974}
   - component: {fileID: 2005336972}
+  - component: {fileID: 2005336975}
   m_Layer: 0
   m_Name: SceneContext
   m_TagString: Untagged
@@ -677,7 +678,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _scriptableObjectInstallers: []
-  _monoInstallers: []
+  _monoInstallers:
+  - {fileID: 2005336975}
   _installerPrefabs: []
   _autoRun: 1
   OnPreInstall:
@@ -720,6 +722,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1b99346848d83d047981b46884751f2c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &2005336975
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2005336971}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8470ceb8759ec4b458b8b5acce9873ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1660057539 &9223372036854775807
