@@ -9,8 +9,9 @@ namespace PracticeGame
         private CommonPressableObject _startButton;
         public override void InstallBindings()
         {
-            Container.Bind<CommonPressableObject>()
+            Container.Bind<IMultiInputPressEventSender>()
                 .WithId("Start")
+                .To<CommonPressableObject>()
                 .FromComponentOn(_startButton.gameObject)
                 .AsTransient();
         }

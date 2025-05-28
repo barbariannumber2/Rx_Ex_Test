@@ -7,10 +7,10 @@ namespace PracticeGame
 {
     public class TitleScene : SceneBase
     {
-        private IPointerPressEventSender _titleButton;
+        private IMultiInputPressEventSender _titleButton;
 
         [Inject]
-        public void Construct(ISceneManager sceneManager, [Inject(Id = "Start")] IPointerPressEventSender titleButton)
+        public void Construct(ISceneManager sceneManager, [Inject(Id = "Start")] IMultiInputPressEventSender titleButton)
         {
             _sceneManager = sceneManager;
             _titleButton = titleButton;
