@@ -12,7 +12,8 @@ namespace PracticeGame
             Container.Bind<EventSystem>()
             .FromComponentInNewPrefabResource("EventSystem")
             .AsSingle()
-            .NonLazy();
+            .NonLazy()
+            .IfNotBound();
         }
     }
 }

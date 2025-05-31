@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using Zenject;
 
 namespace PracticeGame
 {
@@ -13,9 +14,16 @@ namespace PracticeGame
     {
         /// <summary>
         /// GetComponentで取得しなくていいようにInspectorから設定する
+        /// ->ExtenjectのInjectで良い気がしてきた
         /// </summary>
-        [SerializeField]
+        //[SerializeField]
         private EventSystem _thisEventSystem;
+
+        [Inject]
+        public void Construct(EventSystem eventSystem)
+        {
+            _thisEventSystem = eventSystem;
+        }
 
         private void Awake()
         {
