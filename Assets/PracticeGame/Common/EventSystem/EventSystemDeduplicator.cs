@@ -15,9 +15,7 @@ namespace PracticeGame
         /// GetComponentで取得しなくていいようにInspectorから設定する
         /// </summary>
         [SerializeField]
-        private EventSystem thisEventSystem;
-
-
+        private EventSystem _thisEventSystem;
 
         private void Awake()
         {
@@ -29,7 +27,7 @@ namespace PracticeGame
                 return;
             }
 
-            EventSystem.current = thisEventSystem;
+            EventSystem.current = _thisEventSystem;
             UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
         }
 
@@ -45,7 +43,7 @@ namespace PracticeGame
 
         private void Dedupe()
         {
-            EventSystem.current = thisEventSystem;
+            EventSystem.current = _thisEventSystem;
 
             EventSystem[] eventSystems = FindObjectsByType<EventSystem>(FindObjectsSortMode.None);
 
