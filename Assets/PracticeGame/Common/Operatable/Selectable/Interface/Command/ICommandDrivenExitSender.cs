@@ -1,5 +1,5 @@
 ﻿using System;
-using UniRx;
+using UnityEngine;
 
 namespace PracticeGame
 {
@@ -10,6 +10,6 @@ namespace PracticeGame
     /// </summary>
     public interface ICommandDrivenExitSender
     {
-        public IObservable<Unit> OnExitCommand { get; }
+        public IObservable<GameObject> OnExitCommand { get; }
     }
 }

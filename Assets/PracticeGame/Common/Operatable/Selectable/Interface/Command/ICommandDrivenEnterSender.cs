@@ -1,5 +1,5 @@
 ﻿using System;
-using UniRx;
+using UnityEngine;
 
 namespace PracticeGame
 {
@@ -10,6 +10,6 @@ namespace PracticeGame
     /// </summary>
     public interface ICommandDrivenEnterSender
     {
-        public IObservable<Unit> OnEnterCommand { get; }
+        public IObservable<GameObject> OnEnterCommand { get; }
     }
 }
