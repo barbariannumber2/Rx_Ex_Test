@@ -14,6 +14,13 @@ namespace PracticeGame
                 .To<CommonPressableObject>()
                 .FromComponentOn(_startButton.gameObject)
                 .AsTransient();
+
+            //WithIDのタグ付けはIInitializableをバインドする際には使えないので
+            //BindInterfacesToが使えない
+            Container.Bind<IInitializable>()
+                .To<CommonPressableObject>()
+                .FromComponentOn(_startButton.gameObject)
+                .AsTransient();
         }
     }
 }
