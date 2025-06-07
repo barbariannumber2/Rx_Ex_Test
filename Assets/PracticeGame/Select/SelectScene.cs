@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using Cysharp.Threading.Tasks;
+using System.Threading;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 using Zenject;
 
@@ -9,16 +11,23 @@ namespace PracticeGame
         private IView _selectView;
 
         [Inject]
-        public void Construct(ISceneManager sceneManager/*,IView selectView*/)
+        public void Construct(ISceneManager sceneManager, IView selectView)
         {
             _sceneManager = sceneManager;
-            //_selectView = selectView;
+            _selectView = selectView;
             Debug.Log("SelectScene: Injection Complete");
         }
 
         public override SceneType GetSceneType()
         {
             return SceneType.Select;
+        }
+
+        public override UniTask OnInitialize(ISceneData sceneData, CancellationToken token)
+        {
+            _selectView.Initialize();
+            Debug.Log("SelectScene: OnInitialize");
+            return base.OnInitialize(sceneData, token);
         }
     }
 }
