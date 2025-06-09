@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using UnityEngine;
@@ -22,12 +23,19 @@ namespace PracticeGame
         [SerializeField]
         private List<InputActionLink> _linkList;
 
-        private  Dictionary<InputAction, Key> _linkDict = null;
+        private Dictionary<InputAction, Key> _linkDict = null;
 
         public IReadOnlyDictionary<InputAction, Key> Link
         {
             get
             {
+#if UNITY_EDITOR
+                if (_linkList.Count!=Enum.GetValues(typeof(Key)).Length)
+                {
+                    Debug.LogError("InputActionLinks: LinkListの数がKeyの数と一致しません。");
+                }
+#endif
+
                 _linkDict ??= _linkList.ToDictionary(
                         link => link._actionRef.ToInputAction(),
                         link => link._actionKey

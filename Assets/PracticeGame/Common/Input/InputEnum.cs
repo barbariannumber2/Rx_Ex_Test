@@ -33,9 +33,6 @@ namespace PracticeGame
         CursorLeft,
         /// <summary> カーソル・右 </summary>
         CursorRight,
-        /// <summary> タブ・次 </summary>
-        TabNext,
-        /// <summary> タブ・前 </summary>
-        TabPrev,
+
     };
 }
