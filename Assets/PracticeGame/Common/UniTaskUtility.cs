@@ -10,6 +10,7 @@ namespace PracticeGame
         public static async UniTask RunWithCancellation(Func<CancellationToken, UniTask> taskFunc, int timeoutMs = -1)
         {
             using var cts = new CancellationTokenSource();
+            //CancelAfterはUnity向けに最適化されていないので後で変えた方が良い
             if (timeoutMs > 0)
             {
                 cts.CancelAfter(timeoutMs); // タイムアウト設定（オプション）
@@ -24,5 +25,7 @@ namespace PracticeGame
                 Debug.Log("Task was canceled.");
             }
         }
+
+
     }
 }
