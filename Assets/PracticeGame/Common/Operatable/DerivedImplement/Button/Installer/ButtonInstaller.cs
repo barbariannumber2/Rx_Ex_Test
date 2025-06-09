@@ -13,6 +13,11 @@ namespace PracticeGame
                 .WithId("Button")
                 .FromInstance(Container)
                 .AsCached();
+
+            Container.Bind<ObservableEventTrigger>()
+                .WithId("Button")
+                .FromComponentSibling()
+                .AsTransient();
         }
 
     }
