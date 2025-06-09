@@ -7,13 +7,13 @@ namespace PracticeGame
     public class SelectViewSubInstaller : MonoInstaller
     {
         [SerializeField]
-        private CommonPressableObject _easyButton;
+        private CommonButton _easyButton;
 
         [SerializeField]
-        private CommonPressableObject _normalButton;
+        private CommonButton _normalButton;
 
         [SerializeField]
-        private CommonPressableObject _hardButton;
+        private CommonButton _hardButton;
         public override void InstallBindings()
         {
             ////　SelectInstallerの「サブコンテナ利用例1」に対応するコード
@@ -28,22 +28,34 @@ namespace PracticeGame
                 .AsCached();
 
 
-            Container.Bind<ICommonPressable>()
+            Container.Bind<ICommonButton>()
                 .WithId("EasyButton")
-                .To<CommonPressableObject>()
+                .To<CommonButton>()
                 .FromComponentOn(_easyButton.gameObject)
                 .AsCached();
 
-            Container.Bind<ICommonPressable>()
+            Container.Bind<ICommonButton>()
                 .WithId("NormalButton")
-                .To<CommonPressableObject>()
+                .To<CommonButton>()
                 .FromComponentOn(_normalButton.gameObject)
                 .AsCached();
 
-            Container.Bind<ICommonPressable>()
+            Container.Bind<ICommonButton>()
                 .WithId("HardButton")
-                .To<CommonPressableObject>()
+                .To<CommonButton>()
                 .FromComponentOn(_hardButton.gameObject)
+                .AsCached();
+
+            Container.Bind<CursorAutoMoveByCommand.IInjectData>()
+                .FromInstance(
+                new CursorAutoMoveByCommand.InjectData(new() {_easyButton, _normalButton, _hardButton}, 0)
+                )
+                .AsCached();
+
+            Container.Bind<CursorAutoMoveByPointer.IInjectData>()
+                .FromInstance(
+                new CursorAutoMoveByPointer.InjectData(new() { _easyButton, _normalButton, _hardButton }, 0)
+                )
                 .AsCached();
         }
     }

@@ -6,21 +6,26 @@ namespace PracticeGame
     public class TitleInstaller : MonoInstaller
     {
         [SerializeField]
-        private CommonPressableObject _startButton;
+        private CommonButton _startButton;
         public override void InstallBindings()
         {
-            Container.Bind<IMultiInputPressEventSender>()
+            Container.Bind<ICommonButton>()
                 .WithId("Start")
-                .To<CommonPressableObject>()
+                .To<CommonButton>()
                 .FromComponentOn(_startButton.gameObject)
+                .AsCached();
+
+            Container.Bind<IPointerHoverEventSender>()
+                .To<CommonButton>()
+                .FromComponentSibling()
                 .AsTransient();
 
             //WithIDのタグ付けはIInitializableをバインドする際には使えないので
             //BindInterfacesToが使えない
             Container.Bind<IInitializable>()
-                .To<CommonPressableObject>()
+                .To<CommonButton>()
                 .FromComponentOn(_startButton.gameObject)
-                .AsTransient();
+                .AsCached();
         }
     }
 }

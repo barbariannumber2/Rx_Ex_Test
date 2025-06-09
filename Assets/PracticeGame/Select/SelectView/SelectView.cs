@@ -1,8 +1,6 @@
-﻿using UnityEngine;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Zenject;
-using UnityEngine.InputSystem;
-using System.Reflection;
+
 
 namespace PracticeGame
 {
@@ -10,19 +8,32 @@ namespace PracticeGame
     {
         private IInputManager _inputManager;
 
-        private List<ICommonPressable> _selectButtons;
+        private List<ICommonButton> _selectButtons;
 
         private int _currentIndex = 0;
 
         [Inject]
         public void Construct(
             IInputManager inputManager,
-            [Inject(Id = "EasyButton")] ICommonPressable easyButton,
-            [Inject(Id = "NormalButton")] ICommonPressable normalButton,
-            [Inject(Id = "HardButton")] ICommonPressable hardButton)
+            [Inject(Id = "EasyButton")] ICommonButton easyButton,
+            [Inject(Id = "NormalButton")] ICommonButton normalButton,
+            [Inject(Id = "HardButton")] ICommonButton hardButton)
         {
             _inputManager = inputManager;
             _selectButtons = new() { easyButton, normalButton, hardButton };
+
+            foreach (var button in _selectButtons)
+            {
+                button.SetAllReaction(false);
+            }
+        }
+
+        protected override void OnInitialize()
+        {
+            foreach (var button in _selectButtons)
+            {
+                button.SetAllReaction(true);
+            }
         }
 
         protected override void OnUpdate()
@@ -34,10 +45,12 @@ namespace PracticeGame
             else if (_inputManager.GetButtonDown(Key.CursorUp))
             {
                 _currentIndex = (_currentIndex - 1 + _selectButtons.Count) % _selectButtons.Count;
+                _selectButtons[_currentIndex].Select();
             }
             else if (_inputManager.GetButtonDown(Key.CursorDown))
             {
                 _currentIndex = (_currentIndex + 1) % _selectButtons.Count;
+                _selectButtons[_currentIndex].Select();
 
             }
         }
