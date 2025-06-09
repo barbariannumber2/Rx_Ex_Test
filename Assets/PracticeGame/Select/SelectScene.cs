@@ -25,8 +25,9 @@ namespace PracticeGame
 
         public override UniTask OnInitialize(ISceneData sceneData, CancellationToken token)
         {
-            _selectView.Initialize();
             Debug.Log("SelectScene: OnInitialize");
+            _selectView.Initialize();
+            
             return base.OnInitialize(sceneData, token);
         }
     }

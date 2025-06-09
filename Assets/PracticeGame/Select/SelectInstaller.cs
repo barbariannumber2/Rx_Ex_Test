@@ -1,5 +1,4 @@
 ﻿using PracticeGame;
-using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
 
