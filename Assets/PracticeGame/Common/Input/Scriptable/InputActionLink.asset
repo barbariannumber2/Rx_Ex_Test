@@ -12,4 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f52841a399974a4b9960afea8f2c99d, type: 3}
   m_Name: InputActionLink
   m_EditorClassIdentifier: 
-  _linkList: []
+  _linkList:
+  - <_actionRef>k__BackingField: {fileID: 5410623247415144778, guid: 125042c3393bccf44a11613e0f0e50ed, type: 3}
+    <_actionKey>k__BackingField: 0
+  - <_actionRef>k__BackingField: {fileID: -2990081742478987048, guid: 125042c3393bccf44a11613e0f0e50ed, type: 3}
+    <_actionKey>k__BackingField: 1
+  - <_actionRef>k__BackingField: {fileID: -8072735441331007258, guid: 125042c3393bccf44a11613e0f0e50ed, type: 3}
+    <_actionKey>k__BackingField: 2
+  - <_actionRef>k__BackingField: {fileID: 4206860857252999, guid: 125042c3393bccf44a11613e0f0e50ed, type: 3}
+    <_actionKey>k__BackingField: 3
+  - <_actionRef>k__BackingField: {fileID: -8699697929875267497, guid: 125042c3393bccf44a11613e0f0e50ed, type: 3}
+    <_actionKey>k__BackingField: 4
+  - <_actionRef>k__BackingField: {fileID: -227187893850455690, guid: 125042c3393bccf44a11613e0f0e50ed, type: 3}
+    <_actionKey>k__BackingField: 5
