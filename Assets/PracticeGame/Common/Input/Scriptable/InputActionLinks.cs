@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -10,7 +9,10 @@ namespace PracticeGame
     [CreateAssetMenu(fileName = "InputActionLink", menuName = "Scriptable Objects/InputActionLink")]
     public class InputActionLinks : ScriptableObject
     {
-        [System.Serializable]
+        /// <summary>
+        /// ActionKeyタイプと、それに連動させたいInputActionReferenceのセット
+        /// </summary>
+        [Serializable]
         public class InputActionLink
         {
             [field:SerializeField]
@@ -20,9 +22,12 @@ namespace PracticeGame
             public Key _actionKey { get; private set; }
         }
 
-        [SerializeField]
+        [SerializeField,Tooltip("ActionKeyタイプと連動させたいInputActionReferenceのセット一覧")]
         private List<InputActionLink> _linkList;
 
+        /// <summary>
+        /// linkListのInputActionReferenceをInputActionに変換しつつ、アクションからkeyを求められる辞書を作成
+        /// </summary>
         private Dictionary<InputAction, Key> _linkDict = null;
 
         public IReadOnlyDictionary<InputAction, Key> Link

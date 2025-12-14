@@ -18,16 +18,34 @@ namespace PracticeGame
             Debug.Log("SceneManager: Injection Complete");
         }
 
+        /// <summary>
+        /// 最初のシーンを設定する
+        /// 内部で非同期処理を呼び出す
+        /// </summary>
+        /// <param name="sceneType">初期設定シーンのタイプ</param>
+        /// <param name="sceneData">初期設定シーンに渡すデータ</param>
         public void SceneSettingsInitialization(SceneType sceneType, ISceneData sceneData)
         {
             SceneSettingsInitializationFlow(sceneType, sceneData).Forget();
         }
 
+        /// <summary>
+        /// シーンを変更する
+        /// 最初にシーンを設定して以降はこちらを使う
+        /// </summary>
+        /// <param name="sceneType">切り替え先</param>
+        /// <param name="sceneData">切り替え先に渡すデータ</param>
         public void ChangeScene(SceneType sceneType, ISceneData sceneData)
         {
             ChangeSceneFlow(sceneType, sceneData).Forget();
         }
 
+        /// <summary>
+        /// 最初のシーンを設定する時の一連の処理
+        /// </summary>
+        /// <param name="sceneType"></param>
+        /// <param name="sceneData"></param>
+        /// <returns></returns>
         private async UniTask SceneSettingsInitializationFlow(SceneType sceneType, ISceneData sceneData)
         {
             if (_currentScenes.Count != 0)
@@ -38,11 +56,12 @@ namespace PracticeGame
             var activeScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
             if (activeScene.name.Equals(sceneType.ToString()))
             {
+                // エントリーポイントシーンを開いてエディタプレイした時専用のフロー
                 OnEntrySceneOpenPlayed(activeScene,sceneData).Forget();
             }
             else
             {
-                await _transition.ScreenClose(0.2f);
+                await _transition.ScreenClose(0.2f);//フェードの時間は適当
                 await SceneLoader.SingleLoadSceneAsync(sceneType);
 
                 var mainSceneComponent = FindSceneComponent(sceneType);
@@ -52,12 +71,39 @@ namespace PracticeGame
 
                 await UniTask.WhenAll(SceneInitialize(sceneData));
 
-                await _transition.ScreenOpen(1f);
+                await _transition.ScreenOpen(1f);//フェードの時間は適当
 
                 await UniTask.WhenAll(SceneStart(sceneData));
             }
         }
 
+        /// <summary>
+        /// エントリーポイントとなるシーンを開いてエディタプレイした時専用のフロー
+        /// 
+        /// 【前提】今回のゲームではシーン構造を簡略化していて、タイトルシーン=エントリーポイントシーンなため、
+        /// 各シーンでのエディタプレイ時、自動でChangeScene関数でのタイトルへの遷移リクエストが行われ、遷移フローが実行される
+        /// 【必要な理由】ChangeScene関数は本来アクティブなシーンと同じシーンへの遷移リクエストの場合何も行わない仕様なのだが、
+        /// タイトルシーンでのエディタプレイ時に遷移フローが丸ごと行われない場合、タイトルシーンの初期化も行われなくなってしまう
+        /// </summary>
+        /// <param name="scene"></param>
+        /// <returns></returns>
+        private async UniTask OnEntrySceneOpenPlayed(UnityEngine.SceneManagement.Scene scene, ISceneData sceneData)
+        {
+            await _transition.ScreenClose(0.2f);
+            var mainSceneComponent = FindSceneComponent(scene);
+            _currentScenes.Add(mainSceneComponent);
+            await UniTask.WhenAll(LoadUseScenes(mainSceneComponent));
+            await UniTask.WhenAll(SceneInitialize(null));
+            await _transition.ScreenOpen(1f);
+            await UniTask.WhenAll(SceneStart(null));
+        }
+
+        /// <summary>
+        /// シーンを変更する時の一連の処理
+        /// </summary>
+        /// <param name="sceneType"></param>
+        /// <param name="sceneData"></param>
+        /// <returns></returns>
         private async UniTask ChangeSceneFlow(SceneType sceneType, ISceneData sceneData)
         {
             await UniTask.WhenAll(SceneExit());
@@ -77,7 +123,7 @@ namespace PracticeGame
             _currentScenes.Clear();
 
             var mainSceneComponent = FindSceneComponent(nextMainScene);
-            _currentScenes.Add(mainSceneComponent);
+            _currentScenes.Add(mainSceneComponent);//遷移先シーンを現在のシーン群に追加
 
             await UniTask.WhenAll(LoadUseScenes(mainSceneComponent));
 
@@ -88,33 +134,14 @@ namespace PracticeGame
             await UniTask.WhenAll(SceneStart(sceneData));
         }
 
-        /// <summary>
-        /// エントリーポイントとなるシーンを開いてエディタプレイした時専用のフロー
-        /// 
-        /// 今回のゲームではシーン構造を簡略化していて、タイトルシーン=エントリーポイントシーンなため、
-        /// 各シーンでのエディタプレイ時、自動でChangeScene関数でのタイトルへの遷移リクエストが行われ、遷移フローが実行される
-        /// ChangeScene関数は本来アクティブなシーンと同じシーンへの遷移リクエストの場合何も行わない仕様
-        /// だが、タイトルシーンでのエディタプレイ時に遷移フローが丸ごと行われない場合、タイトルシーンの初期化も行われなくなってしまう
-        /// </summary>
-        /// <param name="scene"></param>
-        /// <returns></returns>
-        private async UniTask OnEntrySceneOpenPlayed(UnityEngine.SceneManagement.Scene scene, ISceneData sceneData)
-        {
-            await _transition.ScreenClose(0.2f);
-            var mainSceneComponent = FindSceneComponent(scene);
-            _currentScenes.Add(mainSceneComponent);
-            await UniTask.WhenAll(LoadUseScenes(mainSceneComponent));
-            await UniTask.WhenAll(SceneInitialize(null));
-            await _transition.ScreenOpen(1f);
-            await UniTask.WhenAll(SceneStart(null));
-        }
+        
 
         private List<UniTask> LoadUseScenes(IScene mainScene)
         {
             List<UniTask> loadTask = new();
             foreach (var useScene in mainScene.UseScenes)
             {
-                loadTask.Add(SceneLoader.SingleLoadSceneAsync(useScene));
+                loadTask.Add(SceneLoader.AddSceneAsync(useScene));
             }
             return loadTask;
         }
