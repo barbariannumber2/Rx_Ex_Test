@@ -1,34 +1,45 @@
-﻿using UnityEngine;
-using Zenject;
+﻿using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
-using Cysharp.Threading.Tasks;
 using System.Threading;
 using System;
-using UnityEngine.EventSystems;
-
+using UnityEngine;
+using Zenject;
 
 namespace PracticeGame
 {
-    public class CursorAutoMoveByPointer : MonoBehaviour
+    public class CursorAutoMoveByCommand : MonoBehaviour
     {
+        /// <summary>
+        /// 注入用データインターフェース
+        /// </summary>
         public interface IInjectData
         {
-            public List<IPointerHoverEventSender> selectables { get; }
+            public List<ICommandDrivenEnterSender> selectables { get; }
             public float moveTimeBySecond { get; }
         }
 
         public class InjectData : IInjectData
         {
-            public List<IPointerHoverEventSender> selectables { get; private set; }
+            /// <summary>
+            /// 移動対象のICommandDrivenEnterSenderリスト
+            /// </summary>
+            public List<ICommandDrivenEnterSender> selectables { get; private set; }
+
+            /// <summary>
+            /// カーソル移動にかける時間（秒）
+            /// </summary>
             public float moveTimeBySecond { get; private set; }
-            public InjectData(List<IPointerHoverEventSender> selectables, float moveTimeBySecond)
+
+            public InjectData(List<ICommandDrivenEnterSender> selectables, float moveTimeBySecond)
             {
                 this.selectables = selectables;
                 this.moveTimeBySecond = moveTimeBySecond;
             }
         }
         
-
+        /// <summary>
+        /// 自動で動かすカーソル
+        /// </summary>
         [SerializeField]
         private GameObject _cursorObject;
 
@@ -37,24 +48,29 @@ namespace PracticeGame
 
         /// <summary>
         /// TがinterfaceのListはシリアライズ出来ないのでMonoBehaviourで受け取り,変換
+        /// Injectで設定する場合は空リストで良い
         /// </summary>
-        [SerializeField,Tooltip("IPointerHoverEventSenderを実装しているMonoBehaviourを設定してください")]
+        [SerializeField, Tooltip("ICommandDrivenEnterSenderを実装しているMonoBehaviourを設定してください")]
         private List<MonoBehaviour> _selectablesMono;
 
-        private IInjectData _injectData;
+        [SerializeField]
+        private List<ICommandDrivenEnterSender> _selectables = new();
 
-        private List<IPointerHoverEventSender> _selectables = new();
+        private IInjectData _injectData;
 
         private CancellationTokenSource _cancellationTokenSource = new();
 
         private UniTask _moveTask = default;
 
+        
+
         [Inject]
         private void Construct(IInjectData injectData)
         {
             _injectData = injectData;
-   
-            Debug.Log("CursorAutoMoveByPointer: Injection Complete");
+
+
+            Debug.Log("CursorAutoMoveByCommand: Injection Complete");
         }
 
         private void Start()
@@ -64,33 +80,29 @@ namespace PracticeGame
                 AddSelectable(selectable);
             }
 
-            // MonoBehaviourからIPointerHoverEventSenderに変換
+            // MonoBehaviourからICommandDrivenEnterSenderに変換
             foreach (var selectableMono in _selectablesMono)
             {
-                if (selectableMono is IPointerHoverEventSender selectable)
+                if (selectableMono is ICommandDrivenEnterSender selectable)
                 {
                     AddSelectable(selectable);
                 }
                 else
                 {
-                    Debug.LogError($"CursorAutoMoveByPointer: {selectableMono.name} does not implement IPointerHoverEventSender.");
+                    Debug.LogError($"CursorAutoMoveByCommand: {selectableMono.name} does not implement ICommandDrivenEnterSender.");
                 }
-            }
-            if (_cursorObject == null)
-            {
-                Debug.LogError("CursorAutoMoveByPointer: Cursor object is not assigned.");
             }
         }
 
-        public void AddSelectable(IPointerHoverEventSender selectable) 
+        public void AddSelectable(ICommandDrivenEnterSender selectable)
         {
             if (_selectables.Contains(selectable))
             {
-                Debug.LogWarning($"CursorAutoMoveByPointer: {selectable} is already added.");
+                Debug.LogWarning($"CursorAutoMoveByCommand: {selectable} is already added.");
                 return;
             }
             _selectables.Add(selectable);
-            selectable.OnEnterPointer.SubscribeWithAddTo((data) => SubscribeMoveFunc(data), this);
+            selectable.OnEnterCommand.SubscribeWithAddTo((data) => SubscribeMoveFunc(data), this);
         }
 
         public void ShowCursor()
@@ -103,7 +115,7 @@ namespace PracticeGame
             _cursorObject.SetActive(false);
         }
 
-        private void SubscribeMoveFunc(PointerEventData data)
+        private void SubscribeMoveFunc(GameObject target)
         {
             // 既に移動中のタスクがある場合はキャンセル
             if (_moveTask.Status == UniTaskStatus.Pending)
@@ -112,17 +124,17 @@ namespace PracticeGame
             }
             try
             {
-                _moveTask = MoveCursor(data.pointerEnter, _moveTimeBySecond, _cancellationTokenSource.Token);
+                _moveTask = MoveCursor(target, _moveTimeBySecond, _cancellationTokenSource.Token);
             }
             catch (OperationCanceledException)
             {
-                Debug.Log("CursorAutoMoveByPointer: Move task was canceled.");
+                Debug.Log("CursorAutoMoveByCommand: Move task was canceled.");
                 _cancellationTokenSource.Dispose();
                 _cancellationTokenSource = new CancellationTokenSource();
             }
         }
 
-        private async UniTask MoveCursor(GameObject target,float moveTime, CancellationToken token) 
+        private async UniTask MoveCursor(GameObject target, float moveTime, CancellationToken token)
         {
             var targetPos = target.transform.position;
             var cursorStartPos = _cursorObject.transform.position;
@@ -134,7 +146,7 @@ namespace PracticeGame
             }
 
 
-            for(float t = 0; t < moveTime; t += Time.deltaTime)
+            for (float t = 0; t < moveTime; t += Time.deltaTime)
             {
                 float progress = t / moveTime;
                 _cursorObject.transform.position = Vector3.Lerp(cursorStartPos, targetPos, progress);

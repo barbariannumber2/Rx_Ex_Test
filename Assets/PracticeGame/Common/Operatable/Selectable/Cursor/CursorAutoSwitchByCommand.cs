@@ -37,6 +37,7 @@ namespace PracticeGame
         
         protected void ChangeCursor(bool isActiveCursor)
         {
+            //TODO:SerializefieldではICursorをそのまま扱えないのでとりあえずGameObjectのオンオフで対応
             _onCursorObject.SetActive(isActiveCursor);
             _offCursorObject.SetActive(isActiveCursor == false);
         }
