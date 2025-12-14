@@ -2,7 +2,7 @@
 
 namespace PracticeGame
 {
-    public class ISceneData : MonoBehaviour
+    public interface ISceneData
     {
 
     }
