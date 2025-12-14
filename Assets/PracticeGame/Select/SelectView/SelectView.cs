@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Zenject;
 
 
@@ -8,6 +10,8 @@ namespace PracticeGame
     {
         private IInputManager _inputManager;
 
+        private ISceneManager _sceneManager;
+
         private List<ICommonButton> _selectButtons;
 
         private int _currentIndex = 0;
@@ -15,11 +19,13 @@ namespace PracticeGame
         [Inject]
         public void Construct(
             IInputManager inputManager,
+            ISceneManager sceneManager,
             [Inject(Id = "EasyButton")] ICommonButton easyButton,
             [Inject(Id = "NormalButton")] ICommonButton normalButton,
             [Inject(Id = "HardButton")] ICommonButton hardButton)
         {
             _inputManager = inputManager;
+            _sceneManager = sceneManager;
             _selectButtons = new() { easyButton, normalButton, hardButton };
 
             foreach (var button in _selectButtons)
@@ -30,10 +36,16 @@ namespace PracticeGame
 
         protected override void OnInitialize()
         {
-            foreach (var button in _selectButtons)
+            IEnumerable<Difficulty> difficulties = System.Enum.GetValues(typeof(Difficulty)).Cast<Difficulty>();
+            foreach (var (button,difficulty) in _selectButtons.Zip(difficulties,(button,difficulty)=>(button,difficulty)))
             {
                 button.SetAllReaction(true);
+                button.OnPointerClick.SubscribeWithAddTo((data) =>
+                {
+                    _sceneManager.ChangeScene(SceneType.Play, new PlaySceneData(difficulty));
+                }, this);
             }
+            //_selectButtons.First()?.Select();
         }
 
         protected override void OnUpdate()
