@@ -28,7 +28,8 @@ namespace PracticeGame
         private void Awake()
         {
             //ExtenjectのAsSingleで生成した場合、DontDestroyOnLoadに属するオブジェクトの子として生成されるため
-            //AwakeのタイミングでシーンがDontDestroyOnLoadになる　これによりヒエラルキー配置と区別可能
+            //Awakeのタイミングで所属シーン名がDontDestroyOnLoadになっている　
+            //これにより各シーンのヒエラルキー直配置と区別可能
             if (gameObject.scene.name != "DontDestroyOnLoad")
             {
                 Destroy(gameObject);
